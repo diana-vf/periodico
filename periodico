@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Periódico - Politécnico Juana Saltitopa</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+body { margin:0; background:#f4f6f9; font-family:'Roboto', sans-serif; }
+
+header {
+  background:#003366;
+  color:white;
+  padding:15px 20px;
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+header img { height:60px; }
+header h1 { margin:0; font-size:24px; }
+
+nav {
+  background:#00509e;
+  padding:10px;
+  text-align:center;
+  box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+
+nav a {
+  color:white;
+  margin:0 15px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.3s;
+}
+
+nav a:hover {
+  color:#ffd700;
+}
+
+.container { max-width:1100px; margin:auto; padding:20px; }
+
+.layout { display:grid; grid-template-columns:2fr 1fr; gap:25px; }
+
+.section { display:none; }
+.active { display:block; }
+
+.main-news {
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.main-news h2 {
+  font-family:'Playfair Display';
+  font-size:32px;
+}
+
+.secondary {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+.news {
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  transition:0.3s;
+}
+
+.news:hover {
+  transform:translateY(-5px);
+  box-shadow:0 6px 15px rgba(0,0,0,0.15);
+}
+
+.news h3 { margin-top:0; }
+.news img { width:100%; border-radius:8px; }
+
+.sidebar {
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.sidebar h4 {
+  border-bottom:2px solid #003366;
+  padding-bottom:5px;
+}
+
+.slider img { width:100%; display:none; border-radius:8px; }
+.slider img.active { display:block; }
+
+button {
+  background:#003366;
+  color:white;
+  border:none;
+  padding:8px 10px;
+  margin-top:5px;
+  border-radius:5px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover {
+  background:#00509e;
+}
+
+input, textarea {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:5px;
+  border:1px solid #ccc;
+}
+
+h2,h3 { color:#003366; }
+
+</style>
+</head>
+<body>
+
+<header>
+<img src="C:\Users\PC\Pictures\8f2a2957-dc3c-474f-9908-f84d7ff7ec79.jpg" style="height:70px; border-radius:50%; border:3px solid white;">
+<h1>Periódico Escolar - Juana Saltitopa</h1>
+</header>
+
+<nav>
+<a onclick="mostrarSeccion('inicio')">Inicio</a>
+<a onclick="mostrarSeccion('noticias')">Noticias</a>
+<a onclick="mostrarSeccion('publicar')">Publicar</a>
+</nav>
+
+<div class="container">
+
+<div id="inicio" class="section active">
+<h2>Bienvenido al periódico</h2>
+<p>Información actualizada del Politécnico.</p>
+</div>
+
+<div id="noticiasSection" class="section">
+<div class="layout">
+<div>
+<div id="principal"></div>
+<div id="secundarias" class="secondary"></div>
+</div>
+<div class="sidebar">
+<h4>Últimas noticias</h4>
+<div id="sidebarNoticias"></div>
+</div>
+</div>
+</div>
+
+<div id="publicarSection" class="section">
+<h2>Publicar noticia</h2>
+<input type="text" id="user" placeholder="Usuario">
+<input type="password" id="clave" placeholder="Contraseña">
+<button onclick="login()">Entrar</button>
+
+<div id="formulario" style="display:none;">
+<input type="text" id="titulo" placeholder="Título">
+<textarea id="contenido" placeholder="Contenido"></textarea>
+<input type="file" id="imagenes" multiple>
+<button onclick="agregarNoticia()">Publicar</button>
+</div>
+</div>
+
+</div>
+
+<script>
+const usuarios=[{user:'admin',pass:'1234',rol:'admin'},{user:'editor',pass:'1111',rol:'editor'}];
+let usuarioActual=null;
+let noticias=JSON.parse(localStorage.getItem('noticias'))||[];
+
+function mostrarSeccion(s){
+ document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+ if(s==='noticias'){document.getElementById('noticiasSection').classList.add('active');render();}
+ else if(s==='publicar'){document.getElementById('publicarSection').classList.add('active');}
+ else document.getElementById('inicio').classList.add('active');
+}
+
+function login(){
+ let u=user.value,p=clave.value;
+ let e=usuarios.find(x=>x.user===u&&x.pass===p);
+ if(e){usuarioActual=e;formulario.style.display='block';alert('Bienvenido');}
+ else alert('Error');
+}
+
+function render(){
+ let p=document.getElementById('principal');
+ let s=document.getElementById('secundarias');
+ let side=document.getElementById('sidebarNoticias');
+
+ p.innerHTML=''; s.innerHTML=''; side.innerHTML='';
+
+ noticias.forEach((n,i)=>{
+  let sliderHTML='';
+  if(n.imagenes?.length){
+   sliderHTML=`<div class='slider' id='s${i}'>`;
+   n.imagenes.forEach((img,j)=>{
+    sliderHTML+=`<img src='${img}' class='${j==0?'active':''}'>`;
+   });
+   sliderHTML+=`<button onclick='prev(${i})'>◀</button><button onclick='next(${i})'>▶</button></div>`;
+  }
+
+  let html=`<div class='news'>
+  <h3>${n.titulo}</h3>
+  ${sliderHTML}
+  <p>${n.contenido}</p>
+  <small>${n.autor}</small>
+  <br>
+  <button onclick='editar(${i})'>Editar</button>
+  ${usuarioActual?.rol==='admin'?`<button onclick='eliminar(${i})'>Eliminar</button>`:''}
+  </div>`;
+
+  if(i===0){
+    p.innerHTML=`<div class='main-news'><h2>${n.titulo}</h2>${sliderHTML}<p>${n.contenido}</p></div>`;
+  } else if(i<5){
+    s.innerHTML+=html;
+  }
+
+  side.innerHTML+=`<p>• ${n.titulo}</p>`;
+ });
+}
+
+function agregarNoticia(){
+ let t=titulo.value,c=contenido.value,files=imagenes.files;
+ let imgs=[]; let count=0;
+ if(files.length===0) guardar(t,c,[]);
+
+ for(let i=0;i<files.length;i++){
+  let r=new FileReader();
+  r.onload=e=>{imgs.push(e.target.result);count++;if(count===files.length)guardar(t,c,imgs);};
+  r.readAsDataURL(files[i]);
+ }
+}
+
+function guardar(t,c,imgs){
+ noticias.unshift({titulo:t,contenido:c,imagenes:imgs,autor:usuarioActual.user});
+ localStorage.setItem('noticias',JSON.stringify(noticias));
+ render();
+}
+
+function editar(i){
+ let n=noticias[i];
+ let nt=prompt('Título',n.titulo);
+ let nc=prompt('Contenido',n.contenido);
+ if(nt&&nc){n.titulo=nt;n.contenido=nc;localStorage.setItem('noticias',JSON.stringify(noticias));render();}
+}
+
+function eliminar(i){noticias.splice(i,1);localStorage.setItem('noticias',JSON.stringify(noticias));render();}
+
+function next(i){
+ let imgs=document.querySelectorAll(`#s${i} img`);
+ let idx=[...imgs].findIndex(x=>x.classList.contains('active'));
+ imgs[idx].classList.remove('active');
+ imgs[(idx+1)%imgs.length].classList.add('active');
+}
+
+function prev(i){
+ let imgs=document.querySelectorAll(`#s${i} img`);
+ let idx=[...imgs].findIndex(x=>x.classList.contains('active'));
+ imgs[idx].classList.remove('active');
+ imgs[(idx-1+imgs.length)%imgs.length].classList.add('active');
+}
+</script>
+
+</body>
+</html>
